@@ -1,0 +1,39 @@
+- hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+  tasks:
+    - name: Move policy 51 before policy 60
+      fortinet.fortios.fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        action: "move"
+        self: 51
+        before: 60
+    - name: Move policy 52 before policy 60
+      fortinet.fortios.fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        action: "move"
+        self: 52
+        before: 60
+    - name: Move policy 53 before policy 60
+      fortinet.fortios.fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        action: "move"
+        self: 53
+        before: 60
+    - name: Move policy 54 before policy 60
+      fortinet.fortios.fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        action: "move"
+        self: 54
+        before: 60

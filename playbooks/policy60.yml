@@ -1,0 +1,59 @@
+- hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+  tasks:
+    - name: Define the DMZ_SERVERS address
+      fortios_firewall_address:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_address:
+          name: "DMZ_SERVERS address"
+          subnet: "192.168.1.0 255.255.255.0"  # Example subnet, adjust as necessary
+
+    - name: Configure firewall policy settings
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_policy:
+          policyid: "60"
+          name: "outside->DMZ_SERVERSSS"
+          srcintf: 
+            - name: "port1"
+          dstintf: 
+            - name: "DMZ_SERVERS"
+          action: "accept"
+          status: "enable"
+          nat: "disable"
+          nat64: "disable"
+          nat46: "disable"
+          ztna_status: "disable"
+          srcaddr: 
+            - name: "all"
+          dstaddr: 
+            - name: "DMZ_SERVERS address"
+          internet_service: "disable"
+          internet_service_src: "disable"
+          internet_service6: "disable"
+          internet_service6_src: "disable"
+          schedule: "always"
+          service: 
+            - name: "HTTP"
+            - name: "POP3"
+            - name: "SMTP"
+            - name: "ALL_ICMP"
+          anti_replay: "enable"
+          utm_status: "enable"
+          inspection_mode: "flow"
+          profile_type: "single"
+          profile_protocol_options: "default"
+          ssl_ssh_profile: "certificate-inspection"
+          ips_sensor: "SQL_INJECTION_ATTACK"
+          logtraffic: "utm"
+          auto_asic_offload: "enable"
