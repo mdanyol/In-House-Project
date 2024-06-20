@@ -10,7 +10,7 @@
     - name: Display security alert for brute force attack
       community.windows.win_msg:
         display_seconds: 30
-        msg: "Security Alert: {{ attacker_ip }} is suspected of a brute force attack. Immediate action required."
+        msg: "Security Alert: {{ attacker_ip }} is suspected of a brute force attack. Immediate action required. Protect and secure {{ victim_ip }}."
       when: attack_type == "brute_force"
 
     - name: Display security alert for DNS amplification attack
@@ -22,7 +22,7 @@
     - name: Display security alert for DNS exfiltration attack
       community.windows.win_msg:
         display_seconds: 30
-        msg: "Security Alert: {{ attacker_ip }} is suspected of DNS exfiltration. Immediate action required. Protect and secure {{ victim_ip }}."
+        msg: "Security Alert: {{ attacker_ip }} is suspected of DNS exfiltration attack. Immediate action required. Protect and secure {{ victim_ip }}."
       when: attack_type == "dns_exfiltration"
 
 - hosts: fortigate
