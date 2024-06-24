@@ -1,0 +1,43 @@
+---
+- name: Undo ACL configuration and its application to VLANs
+  hosts: cisco
+  gather_facts: no
+  tasks:
+    - name: Remove ACL from VLAN interfaces
+      cisco.ios.ios_config:
+        lines:
+          - no ip access-group 110 in
+        parents: "interface Vlan{{ item }}"
+      loop:
+        - 10
+        - 110
+        - 1010
+        - 20
+        - 220
+        - 2020
+        - 3000
+        - 4000
+
+    - name: Delete ACL 110
+      cisco.ios.ios_config:
+        lines:
+          - no access-list 110
+
+    - name: Verify ACL removal from VLAN interfaces
+      cisco.ios.ios_command:
+        commands:
+          - show running-config interface Vlan{{ item }}
+      loop:
+        - 10
+        - 110
+        - 1010
+        - 20
+        - 220
+        - 2020
+        - 3000
+        - 4000
+      register: vlan_config_after_removal
+
+    - name: Show verification results for ACL removal
+      debug:
+        msg: "{{ vlan_config_after_removal.results }}"

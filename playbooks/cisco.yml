@@ -1,25 +1,56 @@
 ---
-- name: Configure Internal_Switch
-  hosts: Internal_Switch
+- name: Configure ACL to block specific subnet and apply to VLANs
+  hosts: cisco
   gather_facts: no
   tasks:
-    - name: send configuration commands to IOS
-      ansible.netcommon.telnet:
-        password: cisco
-        prompts:
-          - "Password: "
-          - "[>#]"
-        command:
-          - terminal length 0
-          - configure terminal
-          - hostname ios01
+    - name: Retrieve current ACL configuration
+      cisco.ios.ios_command:
+        commands:
+          - show running-config | include access-list
+      register: acl_output
 
-    - name: run show commands
-      ansible.netcommon.telnet:
-        password: cisco
-        prompts:
-          - "Password: "
-          - "[>#]"
-        command:
-          - terminal length 0
-          - show version
+    - name: Debug ACL output
+      debug:
+        var: acl_output.stdout_lines
+
+    - name: Manually configure ACLs
+      cisco.ios.ios_config:
+        lines:
+          - no access-list 110
+          - access-list 110 deny ip 172.16.188.0 0.0.0.255 any
+          - access-list 110 permit ip any any
+        parents: 
+
+    - name: Apply ACL to VLAN interfaces
+      cisco.ios.ios_config:
+        lines:
+          - ip access-group 110 in
+        parents: "interface Vlan{{ item }}"
+      loop:
+        - 10
+        - 110
+        - 1010
+        - 20
+        - 220
+        - 2020
+        - 3000
+        - 4000
+
+    - name: Verify ACL is applied to VLAN interfaces
+      cisco.ios.ios_command:
+        commands:
+          - show running-config interface Vlan{{ item }}
+      loop:
+        - 10
+        - 110
+        - 1010
+        - 20
+        - 220
+        - 2020
+        - 3000
+        - 4000
+      register: vlan_config
+
+    - name: Show verification results
+      debug:
+        msg: "{{ vlan_config.results }}"
