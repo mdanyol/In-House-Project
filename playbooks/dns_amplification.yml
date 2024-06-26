@@ -1,4 +1,16 @@
----
+--- #CISCO NOT ADDED LA SIOL
+- name: DNS Amplification remediation
+  hosts: Monitoring
+  gather_facts: no
+  vars:
+    victim_ip: "{{ victim_ip }}"
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Display security alert for brute force attack
+      community.windows.win_msg:
+        display_seconds: 30
+        msg: "Security Alert: {{ attacker_ip }} is suspected of a dns amplification attack. Immediate action required. Immediate action will be taken."
+
 - hosts: fortigate
   gather_facts: no
   collections:
