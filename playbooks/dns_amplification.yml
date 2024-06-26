@@ -1,0 +1,101 @@
+---
+- hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+  tasks:
+    - name: Modify UDP_FLOOD DoS policy to block UDP flood attacks
+      fortios_firewall_dos_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_dos_policy:
+          policyid: 6
+          name: "UDP_FLOOD"
+          interface: "port1"
+          srcaddr:
+            - name: "any"
+          dstaddr:
+            - name: "INT_USERS address"
+          service:
+            - name: "ALL_UDP"
+          status: "enable"
+          anomaly:
+            - name: "tcp_syn_flood"
+              threshold: 2000
+              action: "pass"
+              log: "enable"
+            - name: "tcp_port_scan"
+              threshold: 1000
+              action: "pass"
+              log: "enable"
+            - name: "tcp_src_session"
+              threshold: 5000
+              action: "pass"
+              log: "enable"
+            - name: "tcp_dst_session"
+              threshold: 5000
+              action: "pass"
+              log: "enable"
+            - name: "udp_flood"
+              status: "enable"
+              log: "enable"
+              threshold: 2000
+              action: "block"  # This line adds the block action for UDP flood
+            - name: "udp_scan"
+              threshold: 2000
+              action: "pass"
+              log: "enable"
+            - name: "udp_src_session"
+              threshold: 5000
+              action: "pass"
+              log: "enable"
+            - name: "udp_dst_session"
+              threshold: 5000
+              action: "pass"
+              log: "enable"
+            - name: "icmp_flood"
+              threshold: 250
+              action: "pass"
+              log: "enable"
+            - name: "icmp_sweep"
+              threshold: 100
+              action: "pass"
+              log: "enable"
+            - name: "icmp_src_session"
+              threshold: 300
+              action: "pass"
+              log: "enable"
+            - name: "icmp_dst_session"
+              threshold: 1000
+              action: "pass"
+              log: "enable"
+            - name: "ip_src_session"
+              threshold: 5000
+              action: "pass"
+              log: "enable"
+            - name: "ip_dst_session"
+              threshold: 5000
+              action: "pass"
+              log: "enable"
+            - name: "sctp_flood"
+              threshold: 2000
+              action: "pass"
+              log: "enable"
+            - name: "sctp_scan"
+              threshold: 1000
+              action: "pass"
+              log: "enable"
+            - name: "sctp_src_session"
+              threshold: 5000
+              action: "pass"
+              log: "enable"
+            - name: "sctp_dst_session"
+              threshold: 5000
+              action: "pass"
+              log: "enable"

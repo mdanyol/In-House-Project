@@ -1,0 +1,48 @@
+---
+- name: Undo Brute Force remediation
+  hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+  tasks:
+
+    - name: Delete Block traffic from port1 to port2 policy
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "absent"
+        firewall_policy:
+          policyid: 51
+
+    - name: Delete Block traffic from port1 to port3 policy
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "absent"
+        firewall_policy:
+          policyid: 52
+
+    - name: Delete Block traffic from port1 to port4 policy
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "absent"
+        firewall_policy:
+          policyid: 53
+
+    - name: Delete Block traffic from port1 to port5 policy
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "absent"
+        firewall_policy:
+          policyid: 54
+
+    - name: Remove the malicious IP address definition
+      fortios_firewall_address:
+        vdom: "{{ vdom }}"
+        state: "absent"
+        firewall_address:
+          name: "Malicious_IP"

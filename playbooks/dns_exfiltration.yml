@@ -1,0 +1,44 @@
+- hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+    victim_ip: "{{ victim_ip }}"
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Define the malicious IP address
+      fortios_firewall_address:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_address:
+          name: "{{ name }}"
+          subnet: "{{ attacker_ip }} 255.255.255.255"
+
+    # Block traffic from INT_USERS to port1
+    - name: Block traffic from INT_USERS to port1
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_policy:
+          policyid: "{{ global_counter }}"
+          srcintf: [{"name": "INT_USERS"}]
+          dstintf: [{"name": "port1"}]
+          srcaddr: [{"name": "any"}]
+          dstaddr: [{"name": "{{ name }}"}]
+          action: "deny"
+          schedule: "always"
+          service: [{"name": "ALL"}]
+          logtraffic: "all"
+
+    - name: Move the policy to the correct position
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "move"
+        firewall_policy:
+          policyid: "{{ global_counter }}"
+          before: 3
