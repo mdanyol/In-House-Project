@@ -19,26 +19,19 @@
         firewall_policy:
           policyid: 51
 
-    - name: Delete Block traffic from port1 to port3 policy
+    - name: Delete Block traffic from port1 to port4 policy
       fortios_firewall_policy:
         vdom: "{{ vdom }}"
         state: "absent"
         firewall_policy:
           policyid: 52
 
-    - name: Delete Block traffic from port1 to port4 policy
-      fortios_firewall_policy:
-        vdom: "{{ vdom }}"
-        state: "absent"
-        firewall_policy:
-          policyid: 53
-
     - name: Delete Block traffic from port1 to port5 policy
       fortios_firewall_policy:
         vdom: "{{ vdom }}"
         state: "absent"
         firewall_policy:
-          policyid: 54
+          policyid: 53
 
     - name: Remove the malicious IP address definition
       fortios_firewall_address:
@@ -46,3 +39,31 @@
         state: "absent"
         firewall_address:
           name: "Malicious_IP"
+
+- name: Undo ACL configuration to VLAN 220 on Cisco Device
+  hosts: cisco
+  gather_facts: no
+  vars:
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Remove ACL configuration
+      cisco.ios.ios_config:
+        lines:
+          - no access-list 110
+        parents: []
+
+    - name: Remove ACL from VLAN 220 interface
+      cisco.ios.ios_config:
+        lines:
+          - no ip access-group 110 in
+        parents: "interface Vlan220"
+
+    - name: Verify ACL has been removed from VLAN 220 interface
+      cisco.ios.ios_command:
+        commands:
+          - show running-config interface Vlan220
+      register: vlan_config
+
+    - name: Show verification results
+      debug:
+        msg: "{{ vlan_config.stdout_lines }}"

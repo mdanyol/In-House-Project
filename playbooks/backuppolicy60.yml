@@ -23,7 +23,7 @@
         state: "present"
         firewall_policy:
           policyid: "60"
-          name: "outside->DMZ_SERVERSSS"
+          name: "outside->DMZ_SERVERS"
           srcintf: 
             - name: "port1"
           dstintf: 

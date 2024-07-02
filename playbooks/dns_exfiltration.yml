@@ -1,4 +1,4 @@
---- #CISCO NOT ADDED LA SIOL
+---
 - name: DNS Exfiltration remediation
   hosts: Monitoring
   gather_facts: no
@@ -9,7 +9,7 @@
     - name: Display security alert for brute force attack
       community.windows.win_msg:
         display_seconds: 30
-        msg: "Security Alert: {{ attacker_ip }} is suspected of a dns exfiltration attack. Immediate action required. Immediate action will be taken."
+        msg: "Security Alert: {{ attacker_ip }} is suspected of a dns exfiltration attack. Immediate action will be taken."
 
 - hosts: fortigate
   gather_facts: no
@@ -29,7 +29,7 @@
         vdom: "{{ vdom }}"
         state: "present"
         firewall_address:
-          name: "{{ name }}"
+          name: "Exfiltrator_IP"
           subnet: "{{ attacker_ip }} 255.255.255.255"
 
     # Block traffic from INT_USERS to port1
@@ -39,19 +39,20 @@
         state: "present"
         firewall_policy:
           policyid: "{{ global_counter }}"
+          name: "Block INT_USERS from Exfiltrator"
           srcintf: [{"name": "INT_USERS"}]
           dstintf: [{"name": "port1"}]
           srcaddr: [{"name": "any"}]
-          dstaddr: [{"name": "{{ name }}"}]
+          dstaddr: [{"name": "Exfiltrator_IP"}]
           action: "deny"
           schedule: "always"
           service: [{"name": "ALL"}]
           logtraffic: "all"
 
     - name: Move the policy to the correct position
-      fortios_firewall_policy:
+      fortinet.fortios.fortios_firewall_policy:
         vdom: "{{ vdom }}"
-        state: "move"
-        firewall_policy:
-          policyid: "{{ global_counter }}"
-          before: 3
+        state: "present"
+        action: "move"
+        self: "{{ global_counter }}"
+        before: 3

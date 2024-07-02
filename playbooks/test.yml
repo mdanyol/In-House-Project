@@ -1,4 +1,4 @@
---- 
+---
 - name: Brute Force remediation
   hosts: Monitoring
   gather_facts: no
@@ -9,7 +9,7 @@
     - name: Display security alert for brute force attack
       community.windows.win_msg:
         display_seconds: 30
-        msg: "Security Alert: {{ attacker_ip }} is suspected of a brute force attack. Immediate action required. Immediate action will be taken."
+        msg: "Security Alert: {{ attacker_ip }} is suspected of a brute force attack. Immediate action will be taken."
 
 - hosts: fortigate
   gather_facts: no
@@ -30,20 +30,16 @@
           name: "Malicious_IP"
           subnet: "{{ attacker_ip }} 255.255.255.255"
 
-    - name: Block traffic from port1 to various ports
+    # Block traffic from port1 to port2
+    - name: Block traffic from port1 to port2
       fortios_firewall_policy:
-        loop:
-          - { policyid: 51, dstintf: "port2" }
-          - { policyid: 52, dstintf: "DMZ_SERVERS" }
-          - { policyid: 53, dstintf: "port4" }
-          - { policyid: 54, dstintf: "port5" }
         vdom: "{{ vdom }}"
         state: "present"
         firewall_policy:
-          policyid: "{{ item.policyid }}"
-          name: "Block_port1_to_{{ item.dstintf }}"
+          policyid: 51
+          name: "Block_port1_to_port2"
           srcintf: [{"name": "port1"}]
-          dstintf: [{"name": "{{ item.dstintf }}"}]
+          dstintf: [{"name": "port2"}]
           srcaddr: [{"name": "Malicious_IP"}]
           dstaddr: [{"name": "all"}]
           action: "deny"
@@ -51,15 +47,101 @@
           service: [{"name": "ALL"}]
           logtraffic: "all"
 
-    - name: Move policies before policy 60
+    # Block traffic from port1 to port4
+    - name: Block traffic from port1 to port4
       fortios_firewall_policy:
-        loop:
-          - 51
-          - 52
-          - 53
-          - 54
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_policy:
+          policyid: 52
+          name: "Block_port1_to_port4"
+          srcintf: [{"name": "port1"}]
+          dstintf: [{"name": "port4"}]
+          srcaddr: [{"name": "Malicious_IP"}]
+          dstaddr: [{"name": "all"}]
+          action: "deny"
+          schedule: "always"
+          service: [{"name": "ALL"}]
+          logtraffic: "all"
+
+    # Block traffic from port1 to port5
+    - name: Block traffic from port1 to port5
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_policy:
+          policyid: 53
+          name: "Block_port1_to_port5"
+          srcintf: [{"name": "port1"}]
+          dstintf: [{"name": "port5"}]
+          srcaddr: [{"name": "Malicious_IP"}]
+          dstaddr: [{"name": "all"}]
+          action: "deny"
+          schedule: "always"
+          service: [{"name": "ALL"}]
+          logtraffic: "all"
+          
+    # Move Policies
+    - name: Move policy 51 before policy 60
+      fortinet.fortios.fortios_firewall_policy:
         vdom: "{{ vdom }}"
         state: "present"
         action: "move"
-        self: "{{ item }}"
+        self: 51
         before: 60
+    - name: Move policy 52 before policy 60
+      fortinet.fortios.fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        action: "move"
+        self: 52
+        before: 60
+    - name: Move policy 53 before policy 60
+      fortinet.fortios.fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        action: "move"
+        self: 53
+        before: 60
+
+- name: Configure ACL to allow only HTTP and HTTPS from attacker_ip and apply to VLAN 220
+  hosts: cisco
+  gather_facts: no
+  vars:
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Retrieve current ACL configuration
+      cisco.ios.ios_command:
+        commands:
+          - show running-config | include access-list
+      register: acl_output
+
+    - name: Debug ACL output
+      debug:
+        var: acl_output.stdout_lines
+
+    - name: Manually configure ACLs
+      cisco.ios.ios_config:
+        lines:
+          - no access-list 110
+          - access-list 110 permit tcp {{ attacker_ip }} 0.0.0.0 any eq 80
+          - access-list 110 permit tcp {{ attacker_ip }} 0.0.0.0 any eq 443
+          - access-list 110 deny ip {{ attacker_ip }} 0.0.0.0 any
+          - access-list 110 permit ip any any
+        parents: []
+
+    - name: Apply ACL to VLAN 220 interface
+      cisco.ios.ios_config:
+        lines:
+          - ip access-group 110 in
+        parents: "interface Vlan220"
+
+    - name: Verify ACL is applied to VLAN 220 interface
+      cisco.ios.ios_command:
+        commands:
+          - show running-config interface Vlan220
+      register: vlan_config
+
+    - name: Show verification results
+      debug:
+        msg: "{{ vlan_config.stdout_lines }}"
