@@ -1,0 +1,33 @@
+---
+- name: Fortigate TCP SYN Flood Protection
+  hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+  tasks:
+    - name: Modify TCP_SYN_FLOOD DoS policy to block TCP SYN flood attacks
+      fortios_firewall_dos_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_dos_policy:
+          policyid: 5  # Adjust policy ID as necessary
+          name: "TCP_SYN_FLOOD"
+          interface: "port1"  # Adjust interface as necessary
+          srcaddr:
+            - name: "any"
+          dstaddr:
+            - name: "INT_USERS address"  # Adjust destination address as necessary
+          service:
+            - name: "ALL_TCP"
+          status: "enable"
+          anomaly:
+            - name: "tcp_syn_flood"
+              threshold: 2000
+              action: "block"  # This line adds the block action for TCP SYN flood
+              log: "enable"

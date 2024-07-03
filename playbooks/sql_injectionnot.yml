@@ -1,0 +1,26 @@
+---
+- name: Revert IPS sensor configuration for SQL Injection Attack
+  hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+  tasks:
+    - name: Revert IPS sensor for SQL Injection Attack
+      fortinet.fortios.fortios_ips_sensor:
+        vdom: "{{ vdom }}"
+        state: "present"
+        ips_sensor:
+          name: "SQL_INJECTION_ATTACK"
+          entries:
+            - id: "1"
+              rule:
+                - id: "15621"
+              action: "pass"
+              log_packet: "enable"
+              status: "enable"
