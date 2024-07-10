@@ -1,0 +1,36 @@
+- hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+  tasks:
+    # Create an object to store attacker's IP address
+    - name: Define the malicious IP address
+      fortios_firewall_address:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_address:
+          name: "Attacker_IP"
+          subnet: "{{ attacker_ip }} 255.255.255.255"
+
+    # Block traffic from port1 (outside) to port2 (internal)
+    - name: Block traffic from port1 to port2
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_policy:
+          policyid: 51
+          name: "Block_port1_to_port2"
+          srcintf: [{"name": "port1"}]
+          dstintf: [{"name": "port2"}]
+          srcaddr: [{"name": "Attacker_IP"}]
+          dstaddr: [{"name": "all"}]
+          action: "deny"
+          schedule: "always"
+          service: [{"name": "ALL"}]
+          logtraffic: "all"

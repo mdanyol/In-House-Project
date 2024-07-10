@@ -1,14 +1,14 @@
 --- #CISCO NOT ADDED LA SIOL
 - name: Send dynamic security alert messages to PCs based on attack type
-  hosts: Monitoring
+  hosts: Victim
   gather_facts: no
-  vars:
-    victim_ip: "{{ victim_ip }}"
-    attacker_ip: "{{ attacker_ip }}"
-    attack_type: "{{ attack_type }}"
+#  vars:
+#    victim_ip: "{{ victim_ip }}"
+#    attacker_ip: "{{ attacker_ip }}"
+#    attack_type: "{{ attack_type }}"
   tasks:
     - name: Display security alert for detected attack
       community.windows.win_msg:
         display_seconds: 30
-        msg: "Security Alert: {{ attacker_ip }} is suspected of a {{ attack_type }} attack. Immediate action required. Protect and secure {{ victim_ip }}."
+        msg: "Security Alert: Attacker is suspected of a Brute Force attack. Immediate action required. Protect and secure Victim."
 #      when: attack_type == "brute_force"

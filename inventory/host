@@ -7,6 +7,10 @@ Internal_Switch ansible_host=192.168.99.252
 [windows]
 Victim ansible_host=192.168.10.151
 Monitoring ansible_host=192.168.30.1
+DMZ_Server ansible_host=192.168.20.1
+DMZ_Sec ansible_host=192.168.20.251
+Inside_Attacker ansible_host=192.168.10.129
+Rack ansible_host=192.168.10.187
 
 [fortigate]
 fgt ansible_host=192.168.99.253 ansible_user=admin ansible_password=password

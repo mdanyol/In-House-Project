@@ -1,0 +1,97 @@
+---
+- name: <Attack Type> remediation
+  hosts: Monitoring
+  gather_facts: no
+  vars:
+    victim_ip: "{{ victim_ip }}"
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Display security alert for <Attack Type>
+      community.windows.win_msg:
+        display_seconds: 30
+        msg: "Security Alert: {{ attacker_ip }} is suspected of a <Attack Type>. Immediate action will be taken."
+
+- hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+  tasks:
+    - name: Define the malicious IP address
+      fortios_firewall_address:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_address:
+          name: "Attacker_IP"
+          subnet: "{{ attacker_ip }} 255.255.255.255"
+
+    - name: Block traffic from port1 to port2
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_policy:
+          policyid: <UniquePolicyID1>
+          name: "Block_port1_to_port2"
+          srcintf: [{"name": "port1"}]
+          dstintf: [{"name": "port2"}]
+          srcaddr: [{"name": "Malicious_IP"}]
+          dstaddr: [{"name": "all"}]
+          action: "deny"
+          schedule: "always"
+          service: [{"name": "ALL"}]
+          logtraffic: "all"
+
+    - name: Move policy <UniquePolicyID1> before policy <ReferencePolicyID>
+      fortinet.fortios.fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        action: "move"
+        self: <UniquePolicyID1>
+        before: <ReferencePolicyID>
+
+- name: Configure ACL to allow only specific traffic from attacker_ip and apply to VLAN 220
+  hosts: cisco
+  gather_facts: no
+  vars:
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Retrieve current ACL configuration
+      cisco.ios.ios_command:
+        commands:
+          - show running-config | include access-list
+      register: acl_output
+
+    - name: Debug ACL output
+      debug:
+        var: acl_output.stdout_lines
+
+    - name: Manually configure ACLs
+      cisco.ios.ios_config:
+        lines:
+          - no access-list 110
+          - access-list 110 permit tcp {{ attacker_ip }} 0.0.0.0 any eq 80
+          - access-list 110 permit tcp {{ attacker_ip }} 0.0.0.0 any eq 443
+          - access-list 110 deny ip {{ attacker_ip }} 0.0.0.0 any
+          - access-list 110 permit ip any any
+        parents: []
+
+    - name: Apply ACL to VLAN 220 interface
+      cisco.ios.ios_config:
+        lines:
+          - ip access-group 110 in
+        parents: "interface Vlan220"
+
+    - name: Verify ACL is applied to VLAN 220 interface
+      cisco.ios.ios_command:
+        commands:
+          - show running-config interface Vlan220
+      register: vlan_config
+
+    - name: Show verification results
+      debug:
+        msg: "{{ vlan_config.stdout_lines }}"
