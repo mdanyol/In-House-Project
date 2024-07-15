@@ -1,4 +1,4 @@
---- #CISCO NOT ADDED LA SIOL
+---
 - name: DNS Amplification remediation
   hosts: Monitoring
   gather_facts: no

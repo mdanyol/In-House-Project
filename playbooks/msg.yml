@@ -1,6 +1,6 @@
 --- #CISCO NOT ADDED LA SIOL
 - name: Send dynamic security alert messages to PCs based on attack type
-  hosts: Victim
+  hosts: windows
   gather_facts: no
 #  vars:
 #    victim_ip: "{{ victim_ip }}"

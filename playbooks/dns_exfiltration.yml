@@ -56,3 +56,58 @@
         action: "move"
         self: "{{ global_counter }}"
         before: 3
+
+- hosts: cisco
+  gather_facts: no
+  tasks:
+    - name: Retrieve current ACL configuration
+      cisco.ios.ios_command:
+        commands:
+          - show running-config | include access-list
+      register: acl_output
+
+    - name: Debug ACL output
+      debug:
+        var: acl_output.stdout_lines
+
+    - name: Manually configure ACLs
+      cisco.ios.ios_config:
+        lines:
+          - no access-list 110
+          - access-list 110 deny ip {{ attacker_ip }} 0.0.0.0 any
+          - access-list 110 permit ip any any
+        parents: 
+
+    - name: Apply ACL to VLAN interfaces
+      cisco.ios.ios_config:
+        lines:
+          - ip access-group 110 out
+        parents: "interface Vlan{{ item }}"
+      loop:
+        - 10
+        - 110
+        - 1010
+        - 20
+        - 220
+        - 2020
+        - 3000
+        - 4000
+
+    - name: Verify ACL is applied to VLAN interfaces
+      cisco.ios.ios_command:
+        commands:
+          - show running-config interface Vlan{{ item }}
+      loop:
+        - 10
+        - 110
+        - 1010
+        - 20
+        - 220
+        - 2020
+        - 3000
+        - 4000
+      register: vlan_config
+
+    - name: Show verification results
+      debug:
+        msg: "{{ vlan_config.results }}"

@@ -39,7 +39,7 @@
           name: "Block_port1_to_port2"
           srcintf: [{"name": "port1"}]
           dstintf: [{"name": "port2"}]
-          srcaddr: [{"name": "Malicious_IP"}]
+          srcaddr: [{"name": "Attacker_IP"}]
           dstaddr: [{"name": "all"}]
           action: "deny"
           schedule: "always"

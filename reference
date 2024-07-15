@@ -1,0 +1,60 @@
+---
+- name: Block attacker IP across network
+  hosts: all
+  gather_facts: no
+  vars:
+    attacker_ip: "192.168.1.100"  # Replace with the actual attacker IP
+
+  tasks:
+    - name: Block IP on FortiGate Firewall
+      fortinet.fortios.fortios_firewall_address:
+        vdom: "root"
+        state: "present"
+        firewall_address:
+          name: "Attacker_IP"
+          subnet: "{{ attacker_ip }} 255.255.255.255"
+          
+    - name: Create firewall policy to block attacker IP on FortiGate
+      fortinet.fortios.fortios_firewall_policy:
+        vdom: "root"
+        state: "present"
+        firewall_policy:
+          policyid: 1001
+          name: "Block_Attacker"
+          srcintf: [{"name": "any"}]
+          dstintf: [{"name": "any"}]
+          srcaddr: [{"name": "Attacker_IP"}]
+          dstaddr: [{"name": "all"}]
+          action: "deny"
+          schedule: "always"
+          service: [{"name": "ALL"}]
+          logtraffic: "all"
+
+    - name: Block IP on Windows Firewall
+      win_firewall_rule:
+        name: "Block_Attacker"
+        enable: yes
+        direction: Inbound
+        action: Block
+        remote_ip: "{{ attacker_ip }}"
+
+    - name: Block IP on Cisco Switch
+      cisco.ios.ios_config:
+        lines:
+          - ip access-list extended BLOCK_ATTACKER
+          - deny ip host {{ attacker_ip }} any
+          - permit ip any any
+        parents: []
+
+    - name: Apply ACL to relevant interfaces on Cisco Switch
+      cisco.ios.ios_config:
+        lines:
+          - ip access-group BLOCK_ATTACKER in
+        parents: "interface GigabitEthernet0/1"  # Change to relevant interface
+
+    - name: Block IP on Ubuntu Servers
+      ufw:
+        rule: deny
+        from_ip: "{{ attacker_ip }}"
+        to_ip: "any"
+        to_port: "any"
