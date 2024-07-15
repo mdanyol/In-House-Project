@@ -172,7 +172,7 @@
         name: "Block Attacker IP"
         direction: in
         action: block
-        remote_address: "{{ attacker_ip }}"
+        remoteip: "{{ attacker_ip }}"
         protocol: any
         enabled: yes
         state: present

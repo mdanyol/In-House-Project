@@ -1,6 +1,6 @@
 ---
-- name: Create inbound firewall rule to block attacker_ip on Windows
-  hosts: windows
+- name: Block specified IP on Windows Firewall
+  hosts: Victim
   gather_facts: no
   collections:
     - community.windows
@@ -9,10 +9,10 @@
   tasks:
     - name: Block inbound traffic from attacker_ip
       community.windows.win_firewall_rule:
-        name: "Block Attacker IP"
+        name: "Block {{ attacker_ip }}"
         direction: in
         action: block
-        remote_address: "{{ attacker_ip }}"
+        remoteip: "{{ attacker_ip }}"
         protocol: any
         enabled: yes
         state: present
