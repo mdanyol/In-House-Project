@@ -38,7 +38,7 @@
         vdom: "{{ vdom }}"
         state: "absent"
         firewall_address:
-          name: "Malicious_IP"
+          name: "Attacker_IP"
 
 - name: Undo ACL configuration to VLAN 220 on Cisco Device
   hosts: cisco
@@ -67,3 +67,16 @@
     - name: Show verification results
       debug:
         msg: "{{ vlan_config.stdout_lines }}"
+  
+- name: Remove inbound firewall rule to unblock attacker_ip on Windows
+  hosts: windows
+  gather_facts: no
+  collections:
+    - community.windows
+  vars:
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Remove firewall rule to unblock attacker_ip
+      community.windows.win_firewall_rule:
+        name: "Block Attacker IP"
+        state: absent

@@ -1,10 +1,9 @@
 ---
 - name: Handle brute force attack
-  hosts: Monitoring
+  hosts: Victim
   gather_facts: no
   vars:
-    attacker_ip: "192.168.1.100"  # Replace with the actual attacker IP
-    block_duration: 3600  # Block duration in seconds (e.g., 1 hour)
+    attacker_ip: "192.168.1.111"  # Replace with the actual attacker IP
 
   tasks:
     - name: Display security alert for potential brute force attack
@@ -15,6 +14,8 @@
 - name: Handle brute force attack (Continued)
   hosts: localhost
   gather_facts: no
+  vars:
+    attacker_ip: "192.168.1.111"  # Replace with the actual attacker IP
 
   tasks:
     - name: Send Telegram notification
@@ -23,7 +24,7 @@
         api_method: sendMessage
         api_args:
           chat_id: 7397749412  # Replace with your actual chat ID
-          text: "Security Alert: {{ attacker_ip }} is suspected of a brute force attack. Immediate action has been taken to block the IP on FortiGate."
+          text: "Security Alert: {{ attacker_ip }} is suspected of a brute force attack. Immediate action has been taken to block the IP on End devices firewalls, Fortigate firewall, Network devices (ACLs), and on Servers."
           parse_mode: markdown
           disable_web_page_preview: true
           disable_notification: true
