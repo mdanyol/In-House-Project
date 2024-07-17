@@ -43,7 +43,6 @@
           name: "Attacker_IP"
           subnet: "{{ attacker_ip }} 255.255.255.255"
 
-    # Block traffic from port1 to port2
     - name: Block traffic from port1 to port2
       fortios_firewall_policy:
         vdom: "{{ vdom }}"
@@ -60,7 +59,6 @@
           service: [{"name": "ALL"}]
           logtraffic: "all"
 
-    # Block traffic from port1 to port4
     - name: Block traffic from port1 to port4
       fortios_firewall_policy:
         vdom: "{{ vdom }}"
@@ -77,7 +75,6 @@
           service: [{"name": "ALL"}]
           logtraffic: "all"
 
-    # Block traffic from port1 to port5
     - name: Block traffic from port1 to port5
       fortios_firewall_policy:
         vdom: "{{ vdom }}"
@@ -94,23 +91,24 @@
           service: [{"name": "ALL"}]
           logtraffic: "all"
           
-    # Move Policies
     - name: Move policy 51 before policy 60
-      fortinet.fortios.fortios_firewall_policy:
+      fortios_firewall_policy:
         vdom: "{{ vdom }}"
         state: "present"
         action: "move"
         self: 51
         before: 60
+
     - name: Move policy 52 before policy 60
-      fortinet.fortios.fortios_firewall_policy:
+      fortios_firewall_policy:
         vdom: "{{ vdom }}"
         state: "present"
         action: "move"
         self: 52
         before: 60
+
     - name: Move policy 53 before policy 60
-      fortinet.fortios.fortios_firewall_policy:
+      fortios_firewall_policy:
         vdom: "{{ vdom }}"
         state: "present"
         action: "move"
@@ -141,7 +139,6 @@
           - access-list 110 permit tcp {{ attacker_ip }} 0.0.0.0 any eq 443
           - access-list 110 deny ip {{ attacker_ip }} 0.0.0.0 any
           - access-list 110 permit ip any any
-        parents: []
 
     - name: Apply ACL to VLAN 220 interface
       cisco.ios.ios_config:
@@ -185,7 +182,7 @@
   hosts: localhost
   gather_facts: no
   vars:
-    attacker_ip: {{ attacker_ip }} # Replace with the actual attacker IP
+    attacker_ip: "{{ attacker_ip }}" # Replace with the actual attacker IP
 
   tasks:
     - name: Pause for User Input
@@ -198,11 +195,89 @@
         - name: Keep the IP blocked
           debug:
             msg: "The IP address {{ attacker_ip }} will remain blocked."
-      when: user_input.user_input == "yes"
+      when: user_input.user_input | lower == "yes"
 
-    - name: Unblock IP
-      block:
         - name: Unblock IP
           debug:
             msg: "The IP address {{ attacker_ip }} will now be unblocked."
-      when: user_input.user_input == "no"    
+          when: user_input.user_input | lower == "no"
+
+        - name: Undo Brute Force remediation
+          hosts: fortigate
+          gather_facts: no
+          collections:
+            - fortinet.fortios
+          connection: httpapi
+          vars:
+            vdom: "root"
+            ansible_httpapi_use_ssl: no
+            ansible_httpapi_validate_certs: no
+            ansible_httpapi_port: 80
+          tasks:
+
+            - name: Delete Block traffic from port1 to port2 policy
+              fortios_firewall_policy:
+                vdom: "{{ vdom }}"
+                state: "absent"
+                firewall_policy:
+                  policyid: 51
+
+            - name: Delete Block traffic from port1 to port4 policy
+              fortios_firewall_policy:
+                vdom: "{{ vdom }}"
+                state: "absent"
+                firewall_policy:
+                  policyid: 52
+
+            - name: Delete Block traffic from port1 to port5 policy
+              fortios_firewall_policy:
+                vdom: "{{ vdom }}"
+                state: "absent"
+                firewall_policy:
+                  policyid: 53
+
+            - name: Remove the malicious IP address definition
+              fortios_firewall_address:
+                vdom: "{{ vdom }}"
+                state: "absent"
+                firewall_address:
+                  name: "Attacker_IP"
+
+        - name: Undo ACL configuration to VLAN 220 on Cisco Device
+          hosts: cisco
+          gather_facts: no
+          vars:
+            attacker_ip: "{{ attacker_ip }}"
+          tasks:
+            - name: Remove ACL configuration
+              cisco.ios.ios_config:
+                lines:
+                  - no access-list 110
+                parents: []
+
+            - name: Remove ACL from VLAN 220 interface
+              cisco.ios.ios_config:
+                lines:
+                  - no ip access-group 110 in
+                parents: "interface Vlan220"
+
+            - name: Verify ACL has been removed from VLAN 220 interface
+              cisco.ios.ios_command:
+                commands:
+                  - show running-config interface Vlan220
+              register: vlan_config
+
+            - name: Show verification results
+              debug:
+                msg: "{{ vlan_config.stdout_lines }}"
+          
+        - name: Remove inbound firewall rule to unblock attacker_ip on Windows
+          hosts: Victim
+          gather_facts: no
+          collections:
+            - community.windows
+          tasks:
+            - name: Remove firewall rule to unblock attacker_ip
+              community.windows.win_firewall_rule:
+                name: "Block Attacker IP"
+                state: absent

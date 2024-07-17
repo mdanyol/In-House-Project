@@ -1,21 +1,21 @@
 ---
-- name: Handle brute force attack
-  hosts: Victim
-  gather_facts: no
-  vars:
-    attacker_ip: "192.168.1.111"  # Replace with the actual attacker IP
+#- name: Handle brute force attack
+#  hosts: Victim
+#  gather_facts: no
+#  vars:
+#    attacker_ip: "192.168.1.111"  # Replace with the actual attacker IP
 
-  tasks:
-    - name: Display security alert for potential brute force attack
-      community.windows.win_msg:
-        display_seconds: 30
-        msg: "Security Alert: {{ attacker_ip }} is suspected of a brute force attack. Immediate action will be taken. Verify if this is a legitimate user."
+#  tasks:
+#    - name: Display security alert for potential brute force attack
+#      community.windows.win_msg:
+#        display_seconds: 30
+#        msg: "Security Alert: {{ attacker_ip }} is suspected of a brute force attack. Immediate action will be taken. Verify if this is a legitimate user."
 
 - name: Handle brute force attack (Continued)
   hosts: localhost
   gather_facts: no
   vars:
-    attacker_ip: "192.168.1.111"  # Replace with the actual attacker IP
+    attacker_ip: "{{ attacker_ip }}" # Replace with the actual attacker IP
 
   tasks:
     - name: Send Telegram notification
@@ -39,11 +39,11 @@
         - name: Keep the IP blocked
           debug:
             msg: "The IP address {{ attacker_ip }} will remain blocked."
-      when: user_input.user_input == "yes"
+      when: user_input.user_input | lower == "yes"
 
     - name: Unblock IP
       block:
         - name: Unblock IP
           debug:
             msg: "The IP address {{ attacker_ip }} will now be unblocked."
-      when: user_input.user_input == "no"
+      when: user_input.user_input | lower == "no"
