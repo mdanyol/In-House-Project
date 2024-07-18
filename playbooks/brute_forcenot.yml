@@ -1,5 +1,5 @@
 ---
-- name: Undo Brute Force remediation
+- name: Undo Brute Force remediation on Fortigate
   hosts: fortigate
   gather_facts: no
   collections:
@@ -7,11 +7,7 @@
   connection: httpapi
   vars:
     vdom: "root"
-    ansible_httpapi_use_ssl: no
-    ansible_httpapi_validate_certs: no
-    ansible_httpapi_port: 80
   tasks:
-
     - name: Delete Block traffic from port1 to port2 policy
       fortios_firewall_policy:
         vdom: "{{ vdom }}"
@@ -40,7 +36,7 @@
         firewall_address:
           name: "Attacker_IP"
 
-- name: Undo ACL configuration to VLAN 220 on Cisco Device
+- name: Undo ACL configuration on Cisco Device
   hosts: cisco
   gather_facts: no
   vars:
@@ -58,18 +54,8 @@
           - no ip access-group 110 in
         parents: "interface Vlan220"
 
-    - name: Verify ACL has been removed from VLAN 220 interface
-      cisco.ios.ios_command:
-        commands:
-          - show running-config interface Vlan220
-      register: vlan_config
-
-    - name: Show verification results
-      debug:
-        msg: "{{ vlan_config.stdout_lines }}"
-  
-- name: Remove inbound firewall rule to unblock attacker_ip on Windows
-  hosts: windows
+- name: Remove inbound firewall rule on Windows to unblock attacker_ip
+  hosts: Victim_PC
   gather_facts: no
   collections:
     - community.windows

@@ -1,6 +1,5 @@
----
 - name: Brute Force remediation
-  hosts: Victim # Temporary
+  hosts: Victim_PC
   gather_facts: no
   vars:
     attacker_ip: "{{ attacker_ip }}"
@@ -18,7 +17,7 @@
         token: '7281232336:AAEOPDNXGU2iwOwyo3C8yVFV4a5tAdvNGIQ'
         api_method: sendMessage
         api_args:
-          chat_id: 7397749412  # Replace with your actual chat ID
+          chat_id: 7397749412
           text: "Security Alert: {{ attacker_ip }} is suspected of a brute force attack. Immediate action has been taken to block the IP on End devices firewall, Fortigate firewall, Network devices (ACLs), and on Servers."
           parse_mode: markdown
           disable_web_page_preview: true
@@ -43,7 +42,6 @@
           name: "Attacker_IP"
           subnet: "{{ attacker_ip }} 255.255.255.255"
 
-    # Block traffic from port1 to port2
     - name: Block traffic from port1 to port2
       fortios_firewall_policy:
         vdom: "{{ vdom }}"
@@ -60,7 +58,6 @@
           service: [{"name": "ALL"}]
           logtraffic: "all"
 
-    # Block traffic from port1 to port4
     - name: Block traffic from port1 to port4
       fortios_firewall_policy:
         vdom: "{{ vdom }}"
@@ -77,7 +74,6 @@
           service: [{"name": "ALL"}]
           logtraffic: "all"
 
-    # Block traffic from port1 to port5
     - name: Block traffic from port1 to port5
       fortios_firewall_policy:
         vdom: "{{ vdom }}"
@@ -94,7 +90,6 @@
           service: [{"name": "ALL"}]
           logtraffic: "all"
           
-    # Move Policies
     - name: Move policy 51 before policy 60
       fortinet.fortios.fortios_firewall_policy:
         vdom: "{{ vdom }}"
@@ -160,7 +155,7 @@
         msg: "{{ vlan_config.stdout_lines }}"
 
 - name: Create inbound firewall rule to block attacker_ip on Windows
-  hosts: Victim
+  hosts: Victim_PC
   gather_facts: no
   collections:
     - community.windows
@@ -180,29 +175,3 @@
     - name: Display result of firewall rule creation
       debug:
         msg: "Firewall rule to block {{ attacker_ip }} created."
-
-- name: Handle brute force attack (Continued)
-  hosts: localhost
-  gather_facts: no
-  vars:
-    attacker_ip: {{ attacker_ip }} # Replace with the actual attacker IP
-
-  tasks:
-    - name: Pause for User Input
-      pause:
-        prompt: "The IP address {{ attacker_ip }} has been temporarily blocked. Do you want to keep it blocked? (yes/no)"
-      register: user_input
-
-    - name: Process User Decision
-      block:
-        - name: Keep the IP blocked
-          debug:
-            msg: "The IP address {{ attacker_ip }} will remain blocked."
-      when: user_input.user_input == "yes"
-
-    - name: Unblock IP
-      block:
-        - name: Unblock IP
-          debug:
-            msg: "The IP address {{ attacker_ip }} will now be unblocked."
-      when: user_input.user_input == "no"    
