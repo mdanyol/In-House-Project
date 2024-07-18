@@ -7,6 +7,7 @@ Internal_Switch ansible_host=192.168.99.252
 [windows]
 #Management ansible_host=192.168.99.1
 Victim ansible_host=192.168.10.151
+Victim_PC ansible_host=192.168.10.133
 Monitoring ansible_host=192.168.30.1
 DMZ_Server ansible_host=192.168.20.1
 DMZ_Sec ansible_host=192.168.20.251
