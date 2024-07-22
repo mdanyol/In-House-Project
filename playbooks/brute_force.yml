@@ -133,8 +133,6 @@
       cisco.ios.ios_config:
         lines:
           - no access-list 110
-          - access-list 110 permit tcp {{ attacker_ip }} 0.0.0.0 any eq 80
-          - access-list 110 permit tcp {{ attacker_ip }} 0.0.0.0 any eq 443
           - access-list 110 deny ip {{ attacker_ip }} 0.0.0.0 any
           - access-list 110 permit ip any any
         parents: []
