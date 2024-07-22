@@ -1,6 +1,6 @@
 ---
 - name: DNS Exfiltration remediation
-  hosts: Monitoring
+  hosts: Victim_PC
   gather_facts: no
   vars:
     victim_ip: "{{ victim_ip }}"
@@ -10,6 +10,20 @@
       community.windows.win_msg:
         display_seconds: 30
         msg: "Security Alert: {{ attacker_ip }} is suspected of a dns exfiltration attack. Immediate action will be taken."
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Send Telegram notification
+      community.general.telegram:
+        token: '7281232336:AAEOPDNXGU2iwOwyo3C8yVFV4a5tAdvNGIQ'
+        api_method: sendMessage
+        api_args:
+          chat_id: 7397749412
+          text: "Security Alert: {{ attacker_ip }} is suspected of a dns exfiltration attack. Immediate action has been taken to remediate the attack."
+          parse_mode: markdown
+          disable_web_page_preview: true
+          disable_notification: true
 
 - hosts: fortigate
   gather_facts: no
@@ -29,7 +43,7 @@
         vdom: "{{ vdom }}"
         state: "present"
         firewall_address:
-          name: "Exfiltrator_IP"
+          name: "Attacker_IP"
           subnet: "{{ attacker_ip }} 255.255.255.255"
 
     # Block traffic from INT_USERS to port1
@@ -43,7 +57,7 @@
           srcintf: [{"name": "INT_USERS"}]
           dstintf: [{"name": "port1"}]
           srcaddr: [{"name": "any"}]
-          dstaddr: [{"name": "Exfiltrator_IP"}]
+          dstaddr: [{"name": "Attacker_IP"}]
           action: "deny"
           schedule: "always"
           service: [{"name": "ALL"}]

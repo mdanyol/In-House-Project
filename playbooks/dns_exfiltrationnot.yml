@@ -1,4 +1,19 @@
 ---
+- name: Undo DNS Exfiltration remediation
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Send Telegram notification
+      community.general.telegram:
+        token: '7281232336:AAEOPDNXGU2iwOwyo3C8yVFV4a5tAdvNGIQ'
+        api_method: sendMessage
+        api_args:
+          chat_id: 7397749412
+          text: "Security Alert: {{ attacker_ip }} was previously suspected of a dns exfiltration attack. You have chosen to unblock this IP address, have a good day!"
+          parse_mode: markdown
+          disable_web_page_preview: true
+          disable_notification: true
+
 - hosts: fortigate
   gather_facts: no
   collections:
@@ -22,7 +37,7 @@
         vdom: "{{ vdom }}"
         state: "absent"
         firewall_address:
-          name: "Exfiltrator_IP"
+          name: "Attacker_IP"
 
   hosts: cisco
   gather_facts: no
