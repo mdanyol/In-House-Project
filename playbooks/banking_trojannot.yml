@@ -1,0 +1,26 @@
+---
+- name: Undo Brute Force remediation
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Send Telegram notification
+      community.general.telegram:
+        token: '7281232336:AAEOPDNXGU2iwOwyo3C8yVFV4a5tAdvNGIQ'
+        api_method: sendMessage
+        api_args:
+          chat_id: 7397749412
+          text: "Security Alert: {{ attacker_ip }} was previously suspected of a banking trojan attack. You have chosen to unblock this IP address, have a good day!"
+          parse_mode: markdown
+          disable_web_page_preview: true
+          disable_notification: true
+
+- name: Remove inbound firewall rule on Windows to unblock attacker IP
+  hosts: Victim_PC
+  gather_facts: no
+  collections:
+    - community.windows
+  tasks:
+    - name: Remove firewall rule to unblock attacker IP
+      community.windows.win_firewall_rule:
+        name: "Block Attacker IP"
+        state: absent

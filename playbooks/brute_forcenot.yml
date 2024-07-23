@@ -44,7 +44,7 @@
         firewall_policy:
           policyid: 53
 
-    - name: Remove the malicious IP address definition
+    - name: Remove the attacker IP address definition
       fortios_firewall_address:
         vdom: "{{ vdom }}"
         state: "absent"
@@ -69,13 +69,13 @@
           - no ip access-group 110 in
         parents: "interface Vlan220"
 
-- name: Remove inbound firewall rule on Windows to unblock attacker_ip
+- name: Remove inbound firewall rule on Windows to unblock attacker IP
   hosts: Victim_PC
   gather_facts: no
   collections:
     - community.windows
   tasks:
-    - name: Remove firewall rule to unblock attacker_ip
+    - name: Remove firewall rule to unblock attacker IP
       community.windows.win_firewall_rule:
         name: "Block Attacker IP"
         state: absent

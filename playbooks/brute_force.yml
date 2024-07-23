@@ -35,7 +35,7 @@
     ansible_httpapi_validate_certs: no
     ansible_httpapi_port: 80
   tasks:
-    - name: Define the malicious IP address
+    - name: Define the attacker IP address
       fortios_firewall_address:
         vdom: "{{ vdom }}"
         state: "present"
@@ -113,7 +113,7 @@
         self: 53
         before: 60
 
-- name: Configure ACL to allow only HTTP and HTTPS from attacker_ip and apply to VLAN 220
+- name: Configure ACL to allow only HTTP and HTTPS from attacker IP and apply to VLAN 220
   hosts: cisco
   gather_facts: no
   vars:
@@ -153,7 +153,7 @@
       debug:
         msg: "{{ vlan_config.stdout_lines }}"
 
-- name: Create inbound firewall rule to block attacker_ip on Windows
+- name: Create inbound firewall rule to block attacker IP on Windows
   hosts: Victim_PC
   gather_facts: no
   collections:
@@ -161,7 +161,7 @@
   vars:
     attacker_ip: "{{ attacker_ip }}"
   tasks:
-    - name: Block inbound traffic from attacker_ip
+    - name: Block inbound traffic from attacker IP
       community.windows.win_firewall_rule:
         name: "Block Attacker IP"
         direction: in
