@@ -1,0 +1,18 @@
+---
+- name: Undo FortiGate URL Filtering Configuration
+  hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"  # Adjust if needed
+  tasks:
+    - name: Remove URL Filter Entry
+      fortios_webfilter_urlfilter:
+        vdom: "{{ vdom }}"
+        state: "absent"
+        webfilter_urlfilter:
+          name: "URL_Filter"  # Ensure this matches the name used in the configuration
+          entries:
+            - id: 1

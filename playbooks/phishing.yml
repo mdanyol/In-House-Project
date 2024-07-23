@@ -1,0 +1,24 @@
+---
+- name: Configure FortiGate URL Filtering
+  hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"  # Adjust as necessary
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80  # Adjust port as necessary
+  tasks:
+    - name: Configure URL Filter
+      fortios_webfilter_urlfilter:
+        vdom: "{{ vdom }}"
+        state: "present"
+        webfilter_urlfilter:
+          name: "URL_Filter"
+          entries:
+            - id: 1
+              action: "block"
+              url: "*"  # Adjust URL as necessary, "*" blocks all
+          status: "enable"

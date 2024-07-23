@@ -1,0 +1,47 @@
+---
+- name: Banking Trojan remediation
+  hosts: windows
+  gather_facts: no
+  vars:
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Display security alert for banking trojan attack
+      community.windows.win_msg:
+        display_seconds: 30
+        msg: "Security Alert: {{ attacker_ip }} is suspected of a banking trojan attack. Immediate action will be taken."
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Send Telegram notification
+      community.general.telegram:
+        token: '7281232336:AAEOPDNXGU2iwOwyo3C8yVFV4a5tAdvNGIQ'
+        api_method: sendMessage
+        api_args:
+          chat_id: 7397749412
+          text: "Security Alert: {{ attacker_ip }} is suspected of a banking trojan attack(Beef/NjRAT). Immediate action has been taken to isolate/block the IP on End devices firewalls."
+          parse_mode: markdown
+          disable_web_page_preview: true
+          disable_notification: true
+
+- name: Create inbound firewall rule to block attacker_ip on Windows
+  hosts: Victim_PC
+  gather_facts: no
+  collections:
+    - community.windows
+  vars:
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Block outbound traffic from attacker_ip
+      community.windows.win_firewall_rule:
+        name: "Block Attacker IP"
+        direction: out
+        action: block
+        remoteip: "{{ attacker_ip }}"
+        protocol: any
+        enabled: yes
+        state: present
+
+    - name: Display result of firewall rule creation
+      debug:
+        msg: "Firewall rule to block {{ attacker_ip }} created."
