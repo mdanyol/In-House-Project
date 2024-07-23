@@ -1,0 +1,40 @@
+---
+- name: Undo NMAP SYN Scan remediation
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Send Telegram notification
+      community.general.telegram:
+        token: '7281232336:AAEOPDNXGU2iwOwyo3C8yVFV4a5tAdvNGIQ'
+        api_method: sendMessage
+        api_args:
+          chat_id: 7397749412
+          text: "Security Alert: {{ attacker_ip }} was previously suspected of a nmap syn scan attack. You have chosen to unblock this IP address, have a good day!"
+          parse_mode: markdown
+          disable_web_page_preview: true
+          disable_notification: true
+
+- hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+  tasks:
+    - name: Remove the firewall policy blocking traffic
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "absent"
+        firewall_policy:
+          policyid: "{{ global_counter }}"
+
+    - name: Remove the attacker IP address
+      fortios_firewall_address:
+        vdom: "{{ vdom }}"
+        state: "absent"
+        firewall_address:
+          name: "Attacker_IP"

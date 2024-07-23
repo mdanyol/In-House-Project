@@ -1,0 +1,70 @@
+---
+- name: NMAP SYN Scan remediation
+  hosts: Victim_PC
+  gather_facts: no
+  vars:
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Display security alert for brute force attack
+      community.windows.win_msg:
+        display_seconds: 30
+        msg: "Security Alert: {{ attacker_ip }} is suspected of a nmap syn scan attack. Immediate action will be taken."
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Send Telegram notification
+      community.general.telegram:
+        token: '7281232336:AAEOPDNXGU2iwOwyo3C8yVFV4a5tAdvNGIQ'
+        api_method: sendMessage
+        api_args:
+          chat_id: 7397749412
+          text: "Security Alert: {{ attacker_ip }} is suspected of a nmap syn scan attack. Immediate action has been taken to remediate the attack."
+          parse_mode: markdown
+          disable_web_page_preview: true
+          disable_notification: true
+
+- hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Define the malicious IP address
+      fortios_firewall_address:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_address:
+          name: "Attacker_IP"
+          subnet: "{{ attacker_ip }} 255.255.255.255"
+
+    # Block traffic from INT_USERS to port1
+    - name: Block traffic from INT_USERS to port1
+      fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        firewall_policy:
+          policyid: "{{ global_counter }}"
+          name: "Block INT_USERS from Attacker"
+          srcintf: [{"name": "port1"}]
+          dstintf: [{"name": "INT_USERS"}]
+          srcaddr: [{"name": "Attacker_IP"}]
+          dstaddr: [{"name": "any"}]
+          action: "deny"
+          schedule: "always"
+          service: [{"name": "ALL"}]
+          logtraffic: "all"
+
+    - name: Move the policy to the correct position
+      fortinet.fortios.fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: "present"
+        action: "move"
+        self: "{{ global_counter }}"
+        before: 28
