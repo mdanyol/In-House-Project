@@ -1,5 +1,5 @@
 ---
-- name: Configure FortiGate URL Filtering
+- name: Configure FortiGate URL Filtering (Phishing)
   hosts: fortigate
   gather_facts: no
   collections:

@@ -1,5 +1,5 @@
 ---
-- name: Undo FortiGate URL Filtering Configuration
+- name: Undo FortiGate URL Filtering Configuration (Phishing)
   hosts: fortigate
   gather_facts: no
   collections:
