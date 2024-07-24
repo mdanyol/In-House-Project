@@ -1,0 +1,38 @@
+---
+- name: Undo Rogue DHCP configuration
+  hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+  tasks:
+    - name: Remove DHCP relay from INT_USERS interface
+      fortios_system_interface:
+        vdom: "{{ vdom }}"
+        state: "present"
+        system_interface:
+          name: "INT_USERS"
+          dhcp_relay_service: "disable"
+
+- name: Undo Cisco DHCP snooping configuration
+  hosts: cisco
+  gather_facts: no
+  tasks:
+    - name: Remove DHCP snooping globally
+      cisco.ios.ios_config:
+        lines:
+          - no ip dhcp snooping
+          - no ip dhcp snooping vlan 10,110
+
+    - name: Remove DHCP snooping trust from interfaces
+      cisco.ios.ios_config:
+        lines:
+          - no ip dhcp snooping trust
+        parents: 
+          - interface FastEthernet0/21
+          - interface GigabitEthernet0/1

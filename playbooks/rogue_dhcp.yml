@@ -1,0 +1,38 @@
+---
+- name: Rogue DHCP remediation
+  hosts: fortigate
+  gather_facts: no
+  collections:
+    - fortinet.fortios
+  connection: httpapi
+  vars:
+    vdom: "root"
+    ansible_httpapi_use_ssl: no
+    ansible_httpapi_validate_certs: no
+    ansible_httpapi_port: 80
+  tasks:
+    - name: Configure DHCP relay on INT_USERS interface
+      fortios_system_interface:
+        vdom: "{{ vdom }}"
+        state: "present"
+        system_interface:
+          name: "INT_USERS"
+          dhcp_relay_service: "enable"
+
+- name: Configure DHCP snooping on Cisco switch
+  hosts: cisco
+  gather_facts: no
+  tasks:
+    - name: Configure DHCP snooping globally
+      cisco.ios.ios_config:
+        lines:
+          - ip dhcp snooping
+          - ip dhcp snooping vlan 10,110
+
+    - name: Configure DHCP snooping trust on interfaces
+      cisco.ios.ios_config:
+        lines:
+          - ip dhcp snooping trust
+        parents: 
+          - interface FastEthernet0/21
+          - interface GigabitEthernet0/1
