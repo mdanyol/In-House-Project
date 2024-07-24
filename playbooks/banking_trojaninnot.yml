@@ -1,5 +1,5 @@
 ---
-- name: Undo Banking Trojan remediation
+- name: Undo Banking Trojan (in) remediation
   hosts: localhost
   gather_facts: no
   tasks:
@@ -9,7 +9,7 @@
         api_method: sendMessage
         api_args:
           chat_id: 7397749412
-          text: "Security Alert: {{ attacker_ip }} was previously suspected of a banking trojan attack. You have chosen to unblock this IP address, have a good day!"
+          text: "Security Alert: {{ attacker_ip }} was previously suspected of a banking trojan (in) attack. You have chosen to unblock this IP address, have a good day!"
           parse_mode: markdown
           disable_web_page_preview: true
           disable_notification: true

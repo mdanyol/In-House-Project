@@ -1,0 +1,17 @@
+---
+- name: Reminder to undo Port Stealing remediation
+  hosts: localhost
+  gather_facts: no
+  vars:
+    attacker_ip: "{{ attacker_ip }}"
+  tasks:
+    - name: Send Telegram notification
+      community.general.telegram:
+        token: '7281232336:AAEOPDNXGU2iwOwyo3C8yVFV4a5tAdvNGIQ'
+        api_method: sendMessage
+        api_args:
+          chat_id: 7397749412
+          text: "Security Alert: Port Stealing attack previously detected from port:{{ attacker_ip }}. Remember to reset the port:{{ attacker_ip }}"
+          parse_mode: markdown
+          disable_web_page_preview: true
+          disable_notification: true

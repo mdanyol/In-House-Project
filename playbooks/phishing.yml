@@ -1,4 +1,27 @@
 ---
+- name: Phishing remediation
+  hosts: windows
+  gather_facts: no
+  tasks:
+    - name: Display security alert for Phishing attack
+      community.windows.win_msg:
+        display_seconds: 30
+        msg: "Security Alert: Phishing attack detected. Immediate action will be taken."
+
+- hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Send Telegram notification
+      community.general.telegram:
+        token: '7281232336:AAEOPDNXGU2iwOwyo3C8yVFV4a5tAdvNGIQ'
+        api_method: sendMessage
+        api_args:
+          chat_id: 7397749412
+          text: "Security Alert: Phishing attack. Immediate action has been taken"
+          parse_mode: markdown
+          disable_web_page_preview: true
+          disable_notification: true
+
 - name: Configure FortiGate URL Filtering (Phishing)
   hosts: fortigate
   gather_facts: no

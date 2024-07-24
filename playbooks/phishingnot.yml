@@ -1,4 +1,19 @@
 ---
+- name: Undo Phishing remediation
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Send Telegram notification
+      community.general.telegram:
+        token: '7281232336:AAEOPDNXGU2iwOwyo3C8yVFV4a5tAdvNGIQ'
+        api_method: sendMessage
+        api_args:
+          chat_id: 7397749412
+          text: "You have chosen to undo the remediation for the phishing attack, have a good day!"
+          parse_mode: markdown
+          disable_web_page_preview: true
+          disable_notification: true
+
 - name: Undo FortiGate URL Filtering Configuration (Phishing)
   hosts: fortigate
   gather_facts: no

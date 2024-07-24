@@ -1,5 +1,5 @@
 ---
-- name: Banking Trojan remediation
+- name: Banking Trojan (in) remediation
   hosts: windows
   gather_facts: no
   vars:
@@ -8,7 +8,7 @@
     - name: Display security alert for banking trojan attack
       community.windows.win_msg:
         display_seconds: 30
-        msg: "Security Alert: {{ attacker_ip }} is suspected of a banking trojan attack. Immediate action will be taken."
+        msg: "Security Alert: {{ attacker_ip }} is suspected of a banking trojan (in) attack. Immediate action will be taken."
 
 - hosts: localhost
   gather_facts: no
@@ -19,7 +19,7 @@
         api_method: sendMessage
         api_args:
           chat_id: 7397749412
-          text: "Security Alert: {{ attacker_ip }} is suspected of a banking trojan attack(Beef/NjRAT). Immediate action has been taken to isolate/block the IP on End devices firewalls."
+          text: "Security Alert: {{ attacker_ip }} is suspected of a banking trojan (in) attack(Beef/NjRAT). Immediate action has been taken to isolate/block the IP on End devices firewalls."
           parse_mode: markdown
           disable_web_page_preview: true
           disable_notification: true
