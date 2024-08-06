@@ -1,6 +1,6 @@
 ---
 - name: Brute Force remediation
-  hosts: Victim_PC
+  hosts: windows
   gather_facts: no
   vars:
     attacker_ip: "{{ attacker_ip }}"
@@ -154,7 +154,7 @@
         msg: "{{ vlan_config.stdout_lines }}"
 
 - name: Create inbound firewall rule to block attacker IP on Windows
-  hosts: Victim_PC
+  hosts: windows
   gather_facts: no
   collections:
     - community.windows
