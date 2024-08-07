@@ -1,9 +1,9 @@
---- #CISCO NOT ADDED LA SIOL
+---
 - name: Send dynamic security alert messages to PCs based on attack type
   hosts: windows
   gather_facts: no
   tasks:
     - name: Display security alert for detected attack
       community.windows.win_msg:
-        display_seconds: 10
-        msg: "Security Alert: Attacker is suspected of a Brute Force attack. Immediate action required. Protect and secure Victim."
+        display_seconds: 20
+        msg: "Security Alert: Attacker is suspected of a Brute Force attack."

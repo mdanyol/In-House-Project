@@ -70,7 +70,7 @@
         parents: "interface Vlan220"
 
 - name: Remove inbound firewall rule on Windows to unblock attacker IP
-  hosts: Victim_PC
+  hosts: windows
   gather_facts: no
   collections:
     - community.windows
