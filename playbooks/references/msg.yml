@@ -5,5 +5,5 @@
   tasks:
     - name: Display security alert for detected attack
       community.windows.win_msg:
-        display_seconds: 20
-        msg: "Security Alert: Attacker is suspected of a Brute Force attack."
+        display_seconds: 5
+        msg: "Security Alert: 172.16.188.14 is suspected of a brute force attack. Immediate action will be taken."
